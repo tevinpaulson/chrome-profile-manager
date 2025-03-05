@@ -1,5 +1,14 @@
 import { ipcRenderer, contextBridge } from 'electron'
 
+interface Profile {
+  name: string
+  icon: string
+  exePath: string
+  folderPath: string
+  pid: number
+  delete: boolean
+}
+
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
   on(...args: Parameters<typeof ipcRenderer.on>) {
@@ -40,7 +49,15 @@ contextBridge.exposeInMainWorld('system', {
     })
     return r
   },
-
+  saveProfiles: async (text: Profile[]) => {
+    let r = ipcRenderer.invoke('save-profiles', text)
+    ipcRenderer.once('SAVE-PROFILES', () => { })
+  },
+  readSettings: async () => {
+    let r = ipcRenderer.invoke('read-settings')
+    ipcRenderer.once('READ-SETTINGS', (_, _result) => { })
+    return r
+  },
 
 })
 

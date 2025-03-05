@@ -141,6 +141,32 @@ const deleteProfile = async (_event, profileName) => {
   } catch (error) {
   }
 };
+const saveProfiles = async (_event, text) => {
+  let directory = join(app.getPath("userData"), "settings.json");
+  try {
+    await fs.promises.writeFile(directory, JSON.stringify(text, null, 2));
+  } catch (error) {
+    console.log(error);
+  }
+  _event.sender.send(`SAVED_PROFILES`);
+};
+const readSettings = async (event) => {
+  let text = void 0;
+  let path2 = join(app.getPath("userData"), "settings.json");
+  try {
+    text = await fs.promises.readFile(path2, "utf8");
+  } catch (error) {
+    try {
+      let obj = [];
+      fs.writeFile(path2, JSON.stringify(obj, null, 2), () => {
+      });
+      event.sender.send(`READ_SETTINGS`, "0");
+    } catch (error2) {
+    }
+  }
+  event.sender.send(`READ_SETTINGS`, text);
+  return text;
+};
 ipcMain.handle("get-browser-path", async (_event) => {
   let result = await getBrowserPath();
   return result;
@@ -155,6 +181,14 @@ ipcMain.handle("kill-browsers", async (event, pid) => {
 });
 ipcMain.handle("delete-profile", async (event, profileName) => {
   let r = await deleteProfile(event, profileName);
+  return r;
+});
+ipcMain.handle("save-profiles", async (event, text) => {
+  let r = await saveProfiles(event, text);
+  return r;
+});
+ipcMain.handle("read-settings", async (event) => {
+  let r = await readSettings(event);
   return r;
 });
 export {

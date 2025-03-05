@@ -15,14 +15,24 @@ function App() {
   const [profileArray, setProfileArray] = useState<Profile[]>([])
   const [launchUrl, setLaunchUrl] = useState('')
   const [browserPath, setBrowserPath] = useState<string[]>([])
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
+    // read the json to load active profiles
+    const getProfiles = async () => {
+      let settingsArray = await window.system.readSettings()
+      console.log('getProfiles: ', settingsArray)
+      await findPath()
+      setLoaded(true)
+      setProfileArray(JSON.parse(settingsArray))
+    }
+    // Find the path of all browsers (chrome, edge, brave)
     let findPath = async () => {
       let path = await window.system.getBrowserPath()
       setBrowserPath(path)
     }
-    findPath()
-  })
+    getProfiles()
+  }, [])
 
 
   const getSmallestNumber = (): number => {
@@ -119,6 +129,12 @@ function App() {
       return [...prevArray, newProfile]
     })
   }
+
+  useEffect(() => {
+    if (loaded) {
+      window.system.saveProfiles(profileArray)
+    }
+  }, [profileArray])
 
   const [hoverBrowser, setHoverBrowser] = useState('')
   let browserButtons = browserPath.map((path) => {

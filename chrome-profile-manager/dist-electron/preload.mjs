@@ -35,6 +35,17 @@ electron.contextBridge.exposeInMainWorld("system", {
     electron.ipcRenderer.once("GET_BROWSER_PATH", (_, _result) => {
     });
     return r;
+  },
+  saveProfiles: async (text) => {
+    electron.ipcRenderer.invoke("save-profiles", text);
+    electron.ipcRenderer.once("SAVE-PROFILES", () => {
+    });
+  },
+  readSettings: async () => {
+    let r = electron.ipcRenderer.invoke("read-settings");
+    electron.ipcRenderer.once("READ-SETTINGS", (_, _result) => {
+    });
+    return r;
   }
 });
 electron.contextBridge.exposeInMainWorld("tasks", {

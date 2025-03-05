@@ -182,6 +182,49 @@ const deleteProfile = async (_event: Electron.IpcMainInvokeEvent, profileName: s
   }
 }
 
+interface Profile {
+  name: string
+  icon: string
+  exePath: string
+  folderPath: string
+  pid: number
+  delete: boolean
+}
+
+const saveProfiles = async (_event: Electron.IpcMainInvokeEvent, text: Profile[]) => {
+  let directory = join(app.getPath('userData'), 'settings.json')
+  try {
+    await fs.promises.writeFile(directory, JSON.stringify(text, null, 2));
+  }
+  catch (error) {
+    console.log(error)
+  }
+  _event.sender.send(`SAVED_PROFILES`)
+}
+
+const readSettings = async (event: Electron.IpcMainInvokeEvent) => {
+  let text = undefined
+  let path = join(app.getPath('userData'), 'settings.json')
+  try {
+    text = await fs.promises.readFile(path, 'utf8')
+  }
+  catch (error) {
+    try {
+      let obj: Profile[] = []
+
+      fs.writeFile(path, JSON.stringify(obj, null, 2), () => {
+      });
+      event.sender.send(`READ_SETTINGS`, '0')
+    }
+    catch (error) { }
+  }
+  event.sender.send(`READ_SETTINGS`, text)
+  return text
+}
+
+
+
+
 
 
 
@@ -206,3 +249,12 @@ ipcMain.handle('delete-profile', async (event, profileName) => {
   return r
 })
 
+ipcMain.handle('save-profiles', async (event, text) => {
+  let r = await saveProfiles(event, text)
+  return r
+})
+
+ipcMain.handle('read-settings', async (event) => {
+  let r = await readSettings(event)
+  return r
+})
