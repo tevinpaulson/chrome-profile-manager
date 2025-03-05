@@ -84,7 +84,7 @@ let spawnBrowser = (name, browserPath, url) => {
     url = "chrome:newtab";
   }
   let flags = [
-    `--user-data-dir=C:\\Users\\Renz\\Desktop\\Browser Profiles\\ ${name}`,
+    `--profile-directory=Profile ${name}`,
     "--disable-popup-blocking",
     "--no-first-run",
     "--hide-crash-restore-bubble",
