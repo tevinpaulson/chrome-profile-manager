@@ -181,7 +181,18 @@ function App() {
 
       <div className='flex flex-row justify-between p-1'>
         <button title='Delete Profile'
+          onClick={async () => {
+            if (confirm(`Are you sure you want to delete Profile ${profile.name}?`)) {
+              await window.tasks.deleteProfile(`${profile.name}`)
+              setProfileArray((item) => {
+                return item.filter((user) => user.name !== profile.name)
+              })
+              let helperSet = new Set(availableNumbers)
+              setAvailableNumbers(helperSet.add(parseInt(profile.name)))
+            }
 
+          }
+          }
         >
           <svg className='hover:fill-black' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2">
             <path d="M4 7l16 0"></path>

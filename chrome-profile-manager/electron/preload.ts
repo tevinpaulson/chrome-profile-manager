@@ -59,4 +59,11 @@ contextBridge.exposeInMainWorld('tasks', {
     })
     return r;
   },
+
+  deleteProfile: async (profileName: string) => {
+    let r = ipcRenderer.invoke('delete-profile', profileName)
+    ipcRenderer.once('DELETE_PROFILE ${}', async () => {
+    })
+    return r;
+  },
 })

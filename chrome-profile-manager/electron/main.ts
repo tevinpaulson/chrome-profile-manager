@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path, { join } from 'node:path'
 import { spawn, execSync } from 'node:child_process'
+import fs from 'fs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -172,7 +173,14 @@ const killBrowsers = async (_event: Electron.IpcMainInvokeEvent, pid: number) =>
   }
 }
 
+const deleteProfile = async (_event: Electron.IpcMainInvokeEvent, profileName: string) => {
+  let folderPath = join(app.getPath('userData'), 'UserDataSaves', profileName)
+  try {
+    fs.rmSync(folderPath, { recursive: true, force: true })
+  } catch (error) {
 
+  }
+}
 
 
 
@@ -190,6 +198,11 @@ ipcMain.handle('launch-browser', async (event, url, browserPath, name) => {
 
 ipcMain.handle('kill-browsers', async (event, pid) => {
   let r = await killBrowsers(event, pid)
+  return r
+})
+
+ipcMain.handle('delete-profile', async (event, profileName) => {
+  let r = await deleteProfile(event, profileName)
   return r
 })
 

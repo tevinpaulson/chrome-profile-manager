@@ -49,5 +49,11 @@ electron.contextBridge.exposeInMainWorld("tasks", {
     electron.ipcRenderer.once("KILL_BROWSERS", async () => {
     });
     return r;
+  },
+  deleteProfile: async (profileName) => {
+    let r = electron.ipcRenderer.invoke("delete-profile", profileName);
+    electron.ipcRenderer.once("DELETE_PROFILE ${}", async () => {
+    });
+    return r;
   }
 });
