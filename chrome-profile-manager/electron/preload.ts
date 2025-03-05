@@ -33,7 +33,16 @@ contextBridge.exposeInMainWorld(`thiswindow`, {
   }
 })
 
+contextBridge.exposeInMainWorld('system', {
+  getBrowserPath: async () => {
+    let r = ipcRenderer.invoke('get-browser-path')
+    ipcRenderer.once('GET_BROWSER_PATH', (_, _result) => {
+    })
+    return r
+  },
 
+
+})
 
 contextBridge.exposeInMainWorld('tasks', {
   launchBrowser: async (url: string, browserPath: string, profileNum: string) => {
@@ -50,8 +59,4 @@ contextBridge.exposeInMainWorld('tasks', {
     })
     return r;
   },
-
-  
-
-
 })

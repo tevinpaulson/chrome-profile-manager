@@ -29,6 +29,14 @@ electron.contextBridge.exposeInMainWorld(`thiswindow`, {
     electron.ipcRenderer.invoke("close-window");
   }
 });
+electron.contextBridge.exposeInMainWorld("system", {
+  getBrowserPath: async () => {
+    let r = electron.ipcRenderer.invoke("get-browser-path");
+    electron.ipcRenderer.once("GET_BROWSER_PATH", (_, _result) => {
+    });
+    return r;
+  }
+});
 electron.contextBridge.exposeInMainWorld("tasks", {
   launchBrowser: async (url, browserPath, profileNum) => {
     let r = electron.ipcRenderer.invoke("launch-browser", url, browserPath, profileNum);

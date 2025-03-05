@@ -14,7 +14,15 @@ function App() {
   const [availableNumbers, setAvailableNumbers] = useState<Set<number>>(new Set())
   const [profileArray, setProfileArray] = useState<Profile[]>([])
   const [launchUrl, setLaunchUrl] = useState('')
-  const [browserPath, setBrowserPath] = useState('C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe')
+  const [browserPath, setBrowserPath] = useState<string[]>([])
+
+  useEffect(() => {
+    let findPath = async () => {
+      let path = await window.system.getBrowserPath()
+      setBrowserPath(path)
+    }
+    findPath()
+  })
 
 
   const getSmallestNumber = (): number => {
@@ -113,24 +121,58 @@ function App() {
   }
 
   const [hoverBrowser, setHoverBrowser] = useState('')
-  let browserButtons = (
-    <button title='Create Chrome Profile' className='h-[25px] p-1 flex flex-row bg-white rounded-lg'
-      onMouseEnter={() => { setHoverBrowser('chrome') }}
-      onMouseLeave={() => { setHoverBrowser('') }}
-      onClick={() => handleAddProfile('chrome')}
-    >
-      {icon(22, 22, 'chrome')}
-      <svg className="fill-white -mt-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="22" fill="none" viewBox="3 0 24 24">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5" />
-      </svg>
-    </button>
-  )
+  let browserButtons = browserPath.map((path) => {
+    if (String(path).includes('chrome.exe')) {
+      return (
+        <button title='Create Chrome Profile' className='h-[25px] p-1 flex flex-row bg-white rounded-lg'
+          onMouseEnter={() => { setHoverBrowser('chrome') }}
+          onMouseLeave={() => { setHoverBrowser('') }}
+          onClick={() => handleAddProfile('chrome')}
+        >
+          {icon(22, 22, 'chrome')}
+          <svg className="fill-white -mt-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="22" fill="none" viewBox="3 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5" />
+          </svg>
+        </button>
+      )
+    }
+    else if (String(path).includes('msedge.exe')) {
+      return (
+        <button title='Create Edge Profile' className='h-[25px] p-1 flex flex-row bg-white rounded-lg'
+          onMouseEnter={() => { setHoverBrowser('edge') }}
+          onMouseLeave={() => { setHoverBrowser('') }}
+          onClick={() => handleAddProfile('edge')}
+        >
+          {icon(22, 22, 'edge')}
+          <svg className="fill-white -mt-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="22" fill="none" viewBox="3 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5" />
+          </svg>
+        </button>
+
+      )
+    }
+    else if (String(path).includes('brave.exe')) {
+      return (
+        <button title='Create Brave Profile' className='h-[25px] p-1 flex flex-row bg-white rounded-lg'
+          onMouseEnter={() => { setHoverBrowser('brave') }}
+          onMouseLeave={() => { setHoverBrowser('') }}
+          onClick={() => handleAddProfile('brave')}
+        >
+          {icon(22, 22, 'brave')}
+          <svg className="fill-white -mt-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="22" fill="none" viewBox="3 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5" />
+          </svg>
+        </button>
+
+      )
+    }
+  })
 
 
   let profileCards = profileArray.map((profile) => (
     <div className=' flex flex-col bg-white h-[160px] w-[100px] rounded-lg border '>
       <div className={'flex justify-center' + `${profile.exePath.includes('chrome') ? ' hover:fill-red-500 ' : (profile.exePath.includes('edge')) ? ' hover:fill-sky-500 ' : ' hover:fill-orange-500 '}`}>
-        {profile.icon}
+        {icon(100, 100, profile.icon)}
       </div>
 
       <div className='flex justify-center font-bold'>
