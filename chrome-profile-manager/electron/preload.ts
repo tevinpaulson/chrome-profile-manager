@@ -1,5 +1,14 @@
 import { ipcRenderer, contextBridge } from 'electron'
 
+interface Profile {
+  name: string
+  icon: string
+  exePath: string
+  folderPath: string
+  pid: number
+  delete: boolean
+}
+
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
   on(...args: Parameters<typeof ipcRenderer.on>) {
@@ -33,7 +42,24 @@ contextBridge.exposeInMainWorld(`thiswindow`, {
   }
 })
 
+contextBridge.exposeInMainWorld('system', {
+  getBrowserPath: async () => {
+    let r = ipcRenderer.invoke('get-browser-path')
+    ipcRenderer.once('GET_BROWSER_PATH', (_, _result) => {
+    })
+    return r
+  },
+  saveProfiles: async (text: Profile[]) => {
+    let r = ipcRenderer.invoke('save-profiles', text)
+    ipcRenderer.once('SAVE-PROFILES', () => { })
+  },
+  readSettings: async () => {
+    let r = ipcRenderer.invoke('read-settings')
+    ipcRenderer.once('READ-SETTINGS', (_, _result) => { })
+    return r
+  },
 
+})
 
 contextBridge.exposeInMainWorld('tasks', {
   launchBrowser: async (url: string, browserPath: string, profileNum: string) => {
@@ -51,7 +77,10 @@ contextBridge.exposeInMainWorld('tasks', {
     return r;
   },
 
-  
-
-
+  deleteProfile: async (profileName: string) => {
+    let r = ipcRenderer.invoke('delete-profile', profileName)
+    ipcRenderer.once('DELETE_PROFILE ${}', async () => {
+    })
+    return r;
+  },
 })

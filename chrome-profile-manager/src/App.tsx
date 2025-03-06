@@ -5,7 +5,7 @@ function App() {
   // Define Type for Profile or else there will be errors when array is empty and types cannot be assumed
   interface Profile {
     name: string
-    icon: ReactElement
+    icon: string
     exePath: string
     pid: number
     delete: boolean
@@ -14,7 +14,25 @@ function App() {
   const [availableNumbers, setAvailableNumbers] = useState<Set<number>>(new Set())
   const [profileArray, setProfileArray] = useState<Profile[]>([])
   const [launchUrl, setLaunchUrl] = useState('')
-  const [browserPath, setBrowserPath] = useState('C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe')
+  const [browserPath, setBrowserPath] = useState<string[]>([])
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    // read the json to load active profiles
+    const getProfiles = async () => {
+      let settingsArray = await window.system.readSettings()
+      console.log('getProfiles: ', settingsArray)
+      await findPath()
+      setLoaded(true)
+      setProfileArray(JSON.parse(settingsArray))
+    }
+    // Find the path of all browsers (chrome, edge, brave)
+    let findPath = async () => {
+      let path = await window.system.getBrowserPath()
+      setBrowserPath(path)
+    }
+    getProfiles()
+  }, [])
 
 
   const getSmallestNumber = (): number => {
@@ -41,28 +59,28 @@ function App() {
         </svg>
       )
     }
-    // else if (type == 'edge') {
-    //   return (
-    //     <svg className={`-mt-0.5 ${hoverBrowser == 'edge' ? ' fill-blue-500 ' : ' '}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" height={`${String(height)}`} width={`${String(width)}`} stroke-width="2">
-    //       <path d="M20.978 11.372a9 9 0 1 0 -1.593 5.773"></path>
-    //       <path d="M20.978 11.372c.21 2.993 -5.034 2.413 -6.913 1.486c1.392 -1.6 .402 -4.038 -2.274 -3.851c-1.745 .122 -2.927 1.157 -2.784 3.202c.28 3.99 4.444 6.205 10.36 4.79"></path>
-    //       <path d="M3.022 12.628c-.283 -4.043 8.717 -7.228 11.248 -2.688"></path>
-    //       <path d="M12.628 20.978c-2.993 .21 -5.162 -4.725 -3.567 -9.748"></path>
-    //     </svg>
-    //   )
-    // }
-    // else if (type = 'brave') {
-    //   return (
-    //     <svg className={`-mt-0.5  ${hoverBrowser == 'brave' ? ' fill-orange-500 ' : ' '}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" height={`${String(height)}`} width={`${String(width)}`} stroke-width="2">
-    //       <path d="M20 3v10a8 8 0 1 1 -16 0v-10l3.432 3.432a7.963 7.963 0 0 1 4.568 -1.432c1.769 0 3.403 .574 4.728 1.546l3.272 -3.546z"></path>
-    //       <path d="M2 16h5l-4 4"></path>
-    //       <path d="M22 16h-5l4 4"></path>
-    //       <path d="M12 16m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-    //       <path d="M9 11v.01"></path>
-    //       <path d="M15 11v.01"></path>
-    //     </svg>
-    //   )
-    // }
+    else if (type == 'edge') {
+      return (
+        <svg className={`-mt-0.5 ${hoverBrowser == 'edge' ? ' fill-blue-500 ' : ' '}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" height={`${String(height)}`} width={`${String(width)}`} stroke-width="2">
+          <path d="M20.978 11.372a9 9 0 1 0 -1.593 5.773"></path>
+          <path d="M20.978 11.372c.21 2.993 -5.034 2.413 -6.913 1.486c1.392 -1.6 .402 -4.038 -2.274 -3.851c-1.745 .122 -2.927 1.157 -2.784 3.202c.28 3.99 4.444 6.205 10.36 4.79"></path>
+          <path d="M3.022 12.628c-.283 -4.043 8.717 -7.228 11.248 -2.688"></path>
+          <path d="M12.628 20.978c-2.993 .21 -5.162 -4.725 -3.567 -9.748"></path>
+        </svg>
+      )
+    }
+    else if (type = 'brave') {
+      return (
+        <svg className={`-mt-0.5  ${hoverBrowser == 'brave' ? ' fill-orange-500 ' : ' '}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" height={`${String(height)}`} width={`${String(width)}`} stroke-width="2">
+          <path d="M20 3v10a8 8 0 1 1 -16 0v-10l3.432 3.432a7.963 7.963 0 0 1 4.568 -1.432c1.769 0 3.403 .574 4.728 1.546l3.272 -3.546z"></path>
+          <path d="M2 16h5l-4 4"></path>
+          <path d="M22 16h-5l4 4"></path>
+          <path d="M12 16m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+          <path d="M9 11v.01"></path>
+          <path d="M15 11v.01"></path>
+        </svg>
+      )
+    }
     return (<></>)
   }
 
@@ -73,42 +91,104 @@ function App() {
       let number = getSmallestNumber()
       let newProfile: Profile = {
         name: '',
-        icon: <></>,
+        icon: '',
         exePath: '',
         pid: 0,
         delete: false
       }
-
-      newProfile = {
-        name: String(number),
-        icon: icon(100, 100, browserType),
-        exePath: browserPath,
-        pid: 0,
-        delete: false
+      if (browserType == 'chrome') {
+        newProfile = {
+          name: String(number),
+          icon: browserType,
+          exePath: String.raw`${browserPath[0]}`.replace("\\", "\\\\"),
+          pid: 0,
+          delete: false
+        }
+      }
+      else if (browserType == 'edge') {
+        newProfile = {
+          name: String(number),
+          icon: browserType,
+          exePath: String.raw`${browserPath[1]}`.replace("\\", "\\\\"),
+          pid: 0,
+          delete: false
+        }
+      }
+      else if (browserType == 'brave') {
+        newProfile = {
+          name: String(number),
+          icon: browserType,
+          exePath: String.raw`${browserPath[2]}`.replace("\\", "\\\\"),
+          pid: 0,
+          delete: false
+        }
+      }
+      else {
+        return [...prevArray]
       }
       return [...prevArray, newProfile]
     })
   }
 
+  useEffect(() => {
+    if (loaded) {
+      window.system.saveProfiles(profileArray)
+    }
+  }, [profileArray])
+
   const [hoverBrowser, setHoverBrowser] = useState('')
-  let browserButtons = (
-    <button title='Create Chrome Profile' className='h-[25px] p-1 flex flex-row bg-white rounded-lg'
-      onMouseEnter={() => { setHoverBrowser('chrome') }}
-      onMouseLeave={() => { setHoverBrowser('') }}
-      onClick={() => handleAddProfile('chrome')}
-    >
-      {icon(22, 22, 'chrome')}
-      <svg className="fill-white -mt-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="22" fill="none" viewBox="3 0 24 24">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5" />
-      </svg>
-    </button>
-  )
+  let browserButtons = browserPath.map((path) => {
+    if (String(path).includes('chrome.exe')) {
+      return (
+        <button title='Create Chrome Profile' className='h-[25px] p-1 flex flex-row bg-white rounded-lg'
+          onMouseEnter={() => { setHoverBrowser('chrome') }}
+          onMouseLeave={() => { setHoverBrowser('') }}
+          onClick={() => handleAddProfile('chrome')}
+        >
+          {icon(22, 22, 'chrome')}
+          <svg className="fill-white -mt-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="22" fill="none" viewBox="3 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5" />
+          </svg>
+        </button>
+      )
+    }
+    else if (String(path).includes('msedge.exe')) {
+      return (
+        <button title='Create Edge Profile' className='h-[25px] p-1 flex flex-row bg-white rounded-lg'
+          onMouseEnter={() => { setHoverBrowser('edge') }}
+          onMouseLeave={() => { setHoverBrowser('') }}
+          onClick={() => handleAddProfile('edge')}
+        >
+          {icon(22, 22, 'edge')}
+          <svg className="fill-white -mt-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="22" fill="none" viewBox="3 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5" />
+          </svg>
+        </button>
+
+      )
+    }
+    else if (String(path).includes('brave.exe')) {
+      return (
+        <button title='Create Brave Profile' className='h-[25px] p-1 flex flex-row bg-white rounded-lg'
+          onMouseEnter={() => { setHoverBrowser('brave') }}
+          onMouseLeave={() => { setHoverBrowser('') }}
+          onClick={() => handleAddProfile('brave')}
+        >
+          {icon(22, 22, 'brave')}
+          <svg className="fill-white -mt-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="22" fill="none" viewBox="3 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5" />
+          </svg>
+        </button>
+
+      )
+    }
+  })
 
 
   let profileCards = profileArray.map((profile) => (
     <div className=' flex flex-col bg-white h-[160px] w-[100px] rounded-lg border '>
       <div className={'flex justify-center' + `${profile.exePath.includes('chrome') ? ' hover:fill-red-500 ' : (profile.exePath.includes('edge')) ? ' hover:fill-sky-500 ' : ' hover:fill-orange-500 '}`}>
-        {profile.icon}
+        {icon(100, 100, profile.icon)}
       </div>
 
       <div className='flex justify-center font-bold'>
@@ -117,7 +197,18 @@ function App() {
 
       <div className='flex flex-row justify-between p-1'>
         <button title='Delete Profile'
+          onClick={async () => {
+            if (confirm(`Are you sure you want to delete Profile ${profile.name}?`)) {
+              await window.tasks.deleteProfile(`${profile.name}`)
+              setProfileArray((item) => {
+                return item.filter((user) => user.name !== profile.name)
+              })
+              let helperSet = new Set(availableNumbers)
+              setAvailableNumbers(helperSet.add(parseInt(profile.name)))
+            }
 
+          }
+          }
         >
           <svg className='hover:fill-black' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2">
             <path d="M4 7l16 0"></path>

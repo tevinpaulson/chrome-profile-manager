@@ -3,8 +3,9 @@ var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { en
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 import { app, BrowserWindow, ipcMain } from "electron";
 import { fileURLToPath } from "node:url";
-import path from "node:path";
-import { spawn } from "node:child_process";
+import path, { join } from "node:path";
+import { execSync, spawn } from "node:child_process";
+import fs from "fs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname, "..");
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
@@ -79,18 +80,34 @@ class Browser {
     return pid;
   }
 }
+const getBrowserPath = () => {
+  try {
+    const commandChrome = `reg query "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe" /ve`;
+    const commandEdge = `reg query "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\msedge.exe" /ve`;
+    const commandBrave = `reg query "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\brave.exe" /ve`;
+    const outputChrome = execSync(commandChrome, { encoding: "utf-8" });
+    const outputEdge = execSync(commandEdge, { encoding: "utf-8" });
+    const outputBrave = execSync(commandBrave, { encoding: "utf-8" });
+    const matchChrome = outputChrome.match(/REG_SZ\s+([^\r\n]+)/);
+    const matchEdge = outputEdge.match(/REG_SZ\s+([^\r\n]+)/);
+    const matchBrave = outputBrave.match(/REG_SZ\s+([^\r\n]+)/);
+    return [matchChrome ? matchChrome[1].trim() : null, matchEdge ? matchEdge[1].trim() : null, matchBrave ? matchBrave[1].trim() : null];
+  } catch (error) {
+    return [];
+  }
+};
 let spawnBrowser = (name, browserPath, url) => {
+  let profilePath = join(app.getPath("userData"), "UserDataSaves");
   if (!url.includes(".")) {
     url = "chrome:newtab";
   }
   let flags = [
-    `--user-data-dir=C:\\Users\\Renz\\Desktop\\Browser Profiles\\ ${name}`,
+    `--user-data-dir=${profilePath}\\${name}\\Default`,
     "--disable-popup-blocking",
     "--no-first-run",
     "--hide-crash-restore-bubble",
     "--disable-sync",
     `--no-default-browser-check`,
-    "--proxy-server=185.221.217.128:48365",
     `${url}`
   ];
   let chrome = spawn(
@@ -111,19 +128,67 @@ const killBrowsers = async (_event, pid) => {
   if (pid != 0) {
     try {
       await process.kill(pid);
-      console.log("killt");
       return true;
     } catch (error) {
       return true;
     }
   }
 };
+const deleteProfile = async (_event, profileName) => {
+  let folderPath = join(app.getPath("userData"), "UserDataSaves", profileName);
+  try {
+    fs.rmSync(folderPath, { recursive: true, force: true });
+  } catch (error) {
+  }
+};
+const saveProfiles = async (_event, text) => {
+  let directory = join(app.getPath("userData"), "settings.json");
+  try {
+    await fs.promises.writeFile(directory, JSON.stringify(text, null, 2));
+  } catch (error) {
+    console.log(error);
+  }
+  _event.sender.send(`SAVED_PROFILES`);
+};
+const readSettings = async (event) => {
+  let text = void 0;
+  let path2 = join(app.getPath("userData"), "settings.json");
+  try {
+    text = await fs.promises.readFile(path2, "utf8");
+  } catch (error) {
+    try {
+      let obj = [];
+      fs.writeFile(path2, JSON.stringify(obj, null, 2), () => {
+      });
+      event.sender.send(`READ_SETTINGS`, "0");
+    } catch (error2) {
+    }
+  }
+  event.sender.send(`READ_SETTINGS`, text);
+  return text;
+};
+ipcMain.handle("get-browser-path", async (_event) => {
+  let result = await getBrowserPath();
+  return result;
+});
 ipcMain.handle("launch-browser", async (event, url, browserPath, name) => {
   let r = await launchBrowser(event, url, browserPath, name);
   return r;
 });
 ipcMain.handle("kill-browsers", async (event, pid) => {
   let r = await killBrowsers(event, pid);
+  return r;
+});
+ipcMain.handle("delete-profile", async (event, profileName) => {
+  let r = await deleteProfile(event, profileName);
+  return r;
+});
+ipcMain.handle("save-profiles", async (event, text) => {
+  let r = await saveProfiles(event, text);
+  return r;
+});
+ipcMain.handle("read-settings", async (event) => {
+  let r = await readSettings(event);
   return r;
 });
 export {

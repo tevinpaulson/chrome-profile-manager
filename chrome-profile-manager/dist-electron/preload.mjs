@@ -29,6 +29,25 @@ electron.contextBridge.exposeInMainWorld(`thiswindow`, {
     electron.ipcRenderer.invoke("close-window");
   }
 });
+electron.contextBridge.exposeInMainWorld("system", {
+  getBrowserPath: async () => {
+    let r = electron.ipcRenderer.invoke("get-browser-path");
+    electron.ipcRenderer.once("GET_BROWSER_PATH", (_, _result) => {
+    });
+    return r;
+  },
+  saveProfiles: async (text) => {
+    electron.ipcRenderer.invoke("save-profiles", text);
+    electron.ipcRenderer.once("SAVE-PROFILES", () => {
+    });
+  },
+  readSettings: async () => {
+    let r = electron.ipcRenderer.invoke("read-settings");
+    electron.ipcRenderer.once("READ-SETTINGS", (_, _result) => {
+    });
+    return r;
+  }
+});
 electron.contextBridge.exposeInMainWorld("tasks", {
   launchBrowser: async (url, browserPath, profileNum) => {
     let r = electron.ipcRenderer.invoke("launch-browser", url, browserPath, profileNum);
@@ -39,6 +58,12 @@ electron.contextBridge.exposeInMainWorld("tasks", {
   killBrowsers: async (pid) => {
     let r = electron.ipcRenderer.invoke("kill-browsers", pid);
     electron.ipcRenderer.once("KILL_BROWSERS", async () => {
+    });
+    return r;
+  },
+  deleteProfile: async (profileName) => {
+    let r = electron.ipcRenderer.invoke("delete-profile", profileName);
+    electron.ipcRenderer.once("DELETE_PROFILE ${}", async () => {
     });
     return r;
   }
